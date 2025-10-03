@@ -1,0 +1,67 @@
+{
+	"name": "DF_JOIN",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "D_EMP",
+						"type": "DatasetReference"
+					},
+					"name": "EMP"
+				},
+				{
+					"dataset": {
+						"referenceName": "D_DEPARTMENT",
+						"type": "DatasetReference"
+					},
+					"name": "DEPARTMENT"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "D_SINK",
+						"type": "DatasetReference"
+					},
+					"name": "EMPTGT"
+				}
+			],
+			"transformations": [
+				{
+					"name": "joinEMP"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          emp_id as string,",
+				"          emp_name as string,",
+				"          dept_id as string,",
+				"          salary as string,",
+				"          job_title as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> EMP",
+				"source(output(",
+				"          dept_id as string,",
+				"          dept_name as string,",
+				"          location as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> DEPARTMENT",
+				"EMP, DEPARTMENT join(EMP@dept_id == DEPARTMENT@dept_id,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinEMP",
+				"joinEMP sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> EMPTGT"
+			]
+		}
+	}
+}

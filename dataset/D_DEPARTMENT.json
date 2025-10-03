@@ -1,0 +1,36 @@
+{
+	"name": "D_DEPARTMENT",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LINKED_SVC_BLOB",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "departments.csv",
+				"container": "input"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "dept_id",
+				"type": "String"
+			},
+			{
+				"name": "dept_name",
+				"type": "String"
+			},
+			{
+				"name": "location",
+				"type": "String"
+			}
+		]
+	}
+}
