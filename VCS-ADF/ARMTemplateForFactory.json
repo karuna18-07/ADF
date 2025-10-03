@@ -94,6 +94,47 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/D_DEPARTMENT')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LINKED_SVC_BLOB",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "departments.csv",
+						"container": "input"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "dept_id",
+						"type": "String"
+					},
+					{
+						"name": "dept_name",
+						"type": "String"
+					},
+					{
+						"name": "location",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LINKED_SVC_BLOB')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/D_EMP')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -181,6 +222,80 @@
 				}
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DF_JOIN')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "D_EMP",
+								"type": "DatasetReference"
+							},
+							"name": "EMP"
+						},
+						{
+							"dataset": {
+								"referenceName": "D_DEPARTMENT",
+								"type": "DatasetReference"
+							},
+							"name": "DEPARTMENT"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "D_SINK",
+								"type": "DatasetReference"
+							},
+							"name": "EMPTGT"
+						}
+					],
+					"transformations": [
+						{
+							"name": "joinEMP"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          emp_id as string,",
+						"          emp_name as string,",
+						"          dept_id as string,",
+						"          salary as string,",
+						"          job_title as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> EMP",
+						"source(output(",
+						"          dept_id as string,",
+						"          dept_name as string,",
+						"          location as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> DEPARTMENT",
+						"EMP, DEPARTMENT join(EMP@dept_id == DEPARTMENT@dept_id,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> joinEMP",
+						"joinEMP sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> EMPTGT"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/D_EMP')]",
+				"[concat(variables('factoryId'), '/datasets/D_DEPARTMENT')]",
+				"[concat(variables('factoryId'), '/datasets/D_SINK')]"
+			]
 		}
 	]
 }
