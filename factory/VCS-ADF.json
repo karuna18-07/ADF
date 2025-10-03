@@ -1,0 +1,9 @@
+{
+	"name": "VCS-ADF",
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "686b35f8-d653-4183-a7d4-c72a52cfdce6",
+		"tenantId": "1249bfec-c318-41d0-a2f8-f684818301d2"
+	}
+}
